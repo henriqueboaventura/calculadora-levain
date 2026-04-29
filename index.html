@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#7C3626" />
+  <meta name="description" content="Calculadora de receitas de pão artesanal com levain" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Levain" />
+  <title>Levain</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    :root {
+      --bg:           #FAF6EE;
+      --surface:      #FFFFFF;
+      --surface-alt:  #F7F0E8;
+      --primary:      #7C3626;
+      --primary-dk:   #4E2218;
+      --text:         #1A0F0A;
+      --muted:        #7A5740;
+      --border:       #E2D5C5;
+      --shadow:       rgba(60,30,10,.09);
+      --danger:       #C0392B;
+      --radius:       14px;
+      --radius-sm:    9px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 13px 18px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,.25);
+    }
+    header .logo { font-size: 26px; line-height: 1; }
+    header h1   { font-size: 19px; font-weight: 700; letter-spacing: -.3px; }
+    header .tag { font-size: 11px; opacity: .7; margin-top: 1px; }
+
+    /* ── Tabs ── */
+    nav.tabs {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+      position: sticky;
+      top: 55px;
+      z-index: 90;
+      box-shadow: 0 1px 4px var(--shadow);
+    }
+    nav.tabs::-webkit-scrollbar { display: none; }
+    nav.tabs button {
+      flex: 1 0 auto;
+      min-width: 68px;
+      padding: 10px 12px 8px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--muted);
+      transition: color .15s, border-color .15s;
+    }
+    nav.tabs button .ti { font-size: 18px; line-height: 1; }
+    nav.tabs button .tl { font-size: 10px; font-weight: 600; letter-spacing: .3px; white-space: nowrap; }
+    nav.tabs button.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* ── Views ── */
+    main { flex: 1; }
+    .view { display: none; padding: 16px; max-width: 620px; margin: 0 auto; }
+    .view.active { display: block; }
+
+    /* ── Recipe header ── */
+    .rx-head { margin-bottom: 14px; }
+    .rx-head h2 { font-size: 22px; font-weight: 800; color: var(--primary-dk); }
+    .rx-head p  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 10px var(--shadow);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary);
+      margin-bottom: 14px;
+    }
+
+    /* ── Division card ── */
+    .div-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .div-group { display: flex; flex-direction: column; gap: 5px; }
+    .div-group label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--muted);
+    }
+    .stepper {
+      display: flex;
+      align-items: center;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .stepper button {
+      width: 38px; height: 44px;
+      background: var(--surface-alt);
+      border: none;
+      font-size: 20px; font-weight: 300;
+      color: var(--primary);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .1s;
+      user-select: none; -webkit-user-select: none;
+    }
+    .stepper button:active { background: var(--border); }
+    .stepper input {
+      width: 64px; height: 44px;
+      border: none; outline: none;
+      text-align: center;
+      font-size: 17px; font-weight: 700;
+      color: var(--text);
+      background: var(--surface);
+      -moz-appearance: textfield;
+    }
+    .stepper input::-webkit-inner-spin-button,
+    .stepper input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .div-op { font-size: 18px; color: var(--border); padding-bottom: 10px; font-weight: 300; }
+    .div-result { display: flex; flex-direction: column; align-items: flex-start; padding-bottom: 4px; }
+    .div-result .tmc     { font-size: 24px; font-weight: 800; color: var(--primary-dk); }
+    .div-result .tmc-lbl { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .reset-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px 12px;
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background .1s;
+    }
+    .reset-btn:hover { background: var(--surface-alt); }
+
+    /* ── Editable Tables ── */
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .6px;
+      color: var(--muted);
+      padding: 0 0 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    thead th:not(:first-child) { text-align: right; }
+    thead th.del-col { width: 28px; }
+
+    tbody td {
+      padding: 6px 0;
+      border-bottom: 1px solid var(--surface-alt);
+      vertical-align: middle;
+      font-size: 14px;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+
+    /* Cell inputs */
+    .cell-in {
+      border: none;
+      background: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      padding: 4px 5px;
+      border-radius: 5px;
+      transition: background .12s, box-shadow .12s;
+      -moz-appearance: textfield;
+      width: 100%;
+      display: block;
+    }
+    .cell-in::-webkit-inner-spin-button,
+    .cell-in::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .cell-in:focus {
+      background: var(--surface-alt);
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+    .name-in { text-align: left; }
+    .num-in  { text-align: right; }
+
+    td.num-td { text-align: right; }
+    td.del-td { width: 28px; text-align: center; }
+
+    .del-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 3px 5px;
+      border-radius: 5px;
+      opacity: .45;
+      transition: opacity .1s, color .1s, background .1s;
+    }
+    .del-btn:hover { opacity: 1; color: var(--danger); background: #fdf0ee; }
+
+    tfoot td {
+      padding: 10px 0 2px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary-dk);
+      border-top: 2px solid var(--border);
+    }
+    tfoot td:not(:first-child) { text-align: right; }
+    tfoot td.del-td { border-top-color: transparent; }
+
+    /* Add row button */
+    .add-btn {
+      width: 100%;
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: none;
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: background .1s, border-color .1s, color .1s;
+    }
+    .add-btn:hover { background: var(--surface-alt); border-color: var(--primary); color: var(--primary); }
+
+    /* ── Levain pill ── */
+    .levain-pill {
+      display: inline-flex;
+      align-items: center;
+      background: var(--surface-alt);
+      border-radius: 100px;
+      padding: 5px 12px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .levain-pill strong { color: var(--primary); margin-left: 4px; }
+
+    /* ── Soaker badge ── */
+    .badge-prep {
+      display: inline-block;
+      background: #E6F4EA; color: #2A6B40;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: .5px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* ── Fermento tab ── */
+    .needed-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 14px;
+    }
+    .needed-lbl { font-size: 13px; color: var(--muted); flex: 1; }
+    .needed-row .stepper input  { width: 58px; font-size: 16px; }
+    .needed-row .stepper button { width: 34px; height: 40px; }
+    .g-unit { font-size: 13px; color: var(--muted); }
+
+    /* ── Footer ── */
+    footer { text-align: center; padding: 28px 16px 40px; font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🍞</div>
+  <div>
+    <h1>Levain</h1>
+    <div class="tag">Calculadora de Pão Artesanal</div>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Receitas">
+  <button class="active" data-tab="rustico"  role="tab"><span class="ti">🍞</span><span class="tl">Rústico</span></button>
+  <button data-tab="integral" role="tab"><span class="ti">🌾</span><span class="tl">Integral</span></button>
+  <button data-tab="doce"     role="tab"><span class="ti">🍰</span><span class="tl">Doce</span></button>
+  <button data-tab="pizza"    role="tab"><span class="ti">🍕</span><span class="tl">Pizza</span></button>
+  <button data-tab="fermento" role="tab"><span class="ti">🧫</span><span class="tl">Fermento</span></button>
+</nav>
+
+<main>
+  <div id="view-rustico"  class="view active"></div>
+  <div id="view-integral" class="view"></div>
+  <div id="view-doce"     class="view"></div>
+  <div id="view-pizza"    class="view"></div>
+  <div id="view-fermento" class="view"></div>
+</main>
+
+<footer>Levain &mdash; Receitas de Pão Artesanal com Levain</footer>
+
+<script>
+// ═══════════════════════════════════════════════
+// DEFAULTS
+// ═══════════════════════════════════════════════
+const DEFAULTS = {
+  rustico: {
+    name: 'Rústico', subtitle: 'Base Branca',
+    units: 2, weight: 600,
+    flours: [
+      { name: 'Farinha de Trigo', grams: 610 },
+      { name: 'Farinha Integral',  grams: 30  },
+    ],
+    ingredients: [
+      { name: 'Água',         grams: 420,  isLevain: false },
+      { name: 'Levain',       grams: 130,  isLevain: true  },
+      { name: 'Sal Refinado', grams: 12.8, isLevain: false },
+    ],
+    levainRatios: {
+      starter: 0.5,
+      components: [
+        { name: 'Farinha de Trigo', ratio: 1.0 },
+        { name: 'Água',             ratio: 0.5 },
+      ],
+    },
+  },
+  integral: {
+    name: 'Integral Grãos', subtitle: 'Multigrãos',
+    units: 2, weight: 600,
+    flours: [
+      { name: 'Farinha de Trigo', grams: 170 },
+      { name: 'Farinha Integral',  grams: 400 },
+    ],
+    ingredients: [
+      { name: 'Água',                grams: 400, isLevain: false },
+      { name: 'Levain',              grams: 110, isLevain: true  },
+      { name: 'Sal Refinado',        grams: 10,  isLevain: false },
+      { name: 'Multigrãos (Soaker)', grams: 110, isLevain: false },
+    ],
+    levainRatios: {
+      starter: 0.5,
+      components: [
+        { name: 'Farinha Integral', ratio: 1.0 },
+        { name: 'Água',             ratio: 1.0 },
+      ],
+    },
+    soaker: {
+      name: 'Soaker dos Grãos',
+      items: [
+        { name: 'Grãos', grams: 60 },
+        { name: 'Água',  grams: 60 },
+      ],
+    },
+  },
+  doce: {
+    name: 'Doce', subtitle: 'Massa Doce Fofa',
+    units: 2, weight: 600,
+    flours: [
+      { name: 'Farinha de Trigo', grams: 580 },
+    ],
+    ingredients: [
+      { name: 'Água',             grams: 350, isLevain: false },
+      { name: 'Açúcar',           grams: 60,  isLevain: false },
+      { name: 'Levain',           grams: 170, isLevain: true  },
+      { name: 'Óleo de Girassol', grams: 30,  isLevain: false },
+      { name: 'Sal Refinado',     grams: 10,  isLevain: false },
+    ],
+    levainRatios: {
+      starter: 0.5,
+      components: [
+        { name: 'Farinha de Trigo', ratio: 1.0 },
+        { name: 'Água',             ratio: 0.5 },
+      ],
+    },
+  },
+  pizza: {
+    name: 'Pizza', subtitle: 'Massa de Pizza',
+    units: 2, weight: 300,
+    flours: [
+      { name: 'Farinha de Trigo', grams: 360 },
+    ],
+    ingredients: [
+      { name: 'Água',               grams: 230,  isLevain: false },
+      { name: 'Azeite',             grams: 10,   isLevain: false },
+      { name: 'Fermento Biológico', grams: 0.36, isLevain: false },
+      { name: 'Sal Refinado',       grams: 7.2,  isLevain: false },
+    ],
+  },
+};
+
+const RECIPE_IDS = ['rustico', 'integral', 'doce', 'pizza'];
+
+const LEVAIN_TYPES = [
+  {
+    id: 'branco', name: 'Levain Branco', defaultNeeded: 200,
+    starter: 0.5,
+    components: [
+      { name: 'Farinha de Trigo',   ratio: 0.9 },
+      { name: 'Farinha Integral',    ratio: 0.1 },
+      { name: 'Água',               ratio: 0.5 },
+    ],
+  },
+  {
+    id: 'integral', name: 'Levain Integral', defaultNeeded: 200,
+    starter: 0.5,
+    components: [
+      { name: 'Farinha Integral', ratio: 1.0 },
+      { name: 'Água',             ratio: 1.0 },
+    ],
+  },
+  {
+    id: 'centeio', name: 'Levain Centeio', defaultNeeded: 200,
+    starter: 0.5,
+    components: [
+      { name: 'Farinha de Centeio', ratio: 1.0 },
+      { name: 'Água',               ratio: 1.2 },
+    ],
+  },
+];
+
+// ═══════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════
+const LS_KEY = 'levain_v2';
+
+function loadAll() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { return {}; }
+}
+
+function saveAll(patch) {
+  const next = Object.assign(loadAll(), patch);
+  try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch {}
+}
+
+function getState(id) {
+  const def = DEFAULTS[id];
+  const saved = loadAll()[id] || {};
+  return {
+    units:       saved.units       ?? def.units,
+    weight:      saved.weight      ?? def.weight,
+    flours:      (saved.flours      ?? def.flours)      .map(x => ({ ...x })),
+    ingredients: (saved.ingredients ?? def.ingredients) .map(x => ({ ...x })),
+  };
+}
+
+function setState(id, s) {
+  saveAll({ [id]: { units: s.units, weight: s.weight, flours: s.flours, ingredients: s.ingredients } });
+}
+
+function getFermentoState() {
+  const s = loadAll().fermento || {};
+  return Object.fromEntries(LEVAIN_TYPES.map(t => [t.id, s[t.id] ?? t.defaultNeeded]));
+}
+
+function setFermentoState(patch) {
+  const cur = getFermentoState();
+  saveAll({ fermento: { ...cur, ...patch } });
+}
+
+// ═══════════════════════════════════════════════
+// MATH
+// ═══════════════════════════════════════════════
+function totalFlour(s) { return s.flours.reduce((a, f) => a + (f.grams || 0), 0); }
+function totalIngredients(s) { return s.ingredients.reduce((a, i) => a + (i.grams || 0), 0); }
+function actualTmc(s) { return totalFlour(s) + totalIngredients(s); }
+
+function calcLevain(s, id) {
+  const def = DEFAULTS[id];
+  if (!def.levainRatios) return null;
+  const item = s.ingredients.find(i => i.isLevain);
+  if (!item || !(item.grams > 0)) return null;
+  const { starter, components } = def.levainRatios;
+  const totalRatio = starter + components.reduce((a, c) => a + c.ratio, 0);
+  const needed = item.grams;
+  return {
+    needed,
+    starterRatio: starter,
+    starterGrams: needed * starter / totalRatio,
+    totalRatio,
+    components: components.map(c => ({ name: c.name, ratio: c.ratio, grams: needed * c.ratio / totalRatio })),
+  };
+}
+
+function calcFermentoType(type, needed) {
+  const totalRatio = type.starter + type.components.reduce((a, c) => a + c.ratio, 0);
+  return {
+    needed,
+    starterRatio: type.starter,
+    starterGrams: needed * type.starter / totalRatio,
+    totalRatio,
+    components: type.components.map(c => ({ name: c.name, ratio: c.ratio, grams: needed * c.ratio / totalRatio })),
+  };
+}
+
+// ═══════════════════════════════════════════════
+// FORMAT
+// ═══════════════════════════════════════════════
+function fmt(n) {
+  if (n == null || isNaN(n)) return '—';
+  if (n === 0) return '0';
+  if (Math.abs(n) < 1) { const r = Math.round(n * 1000) / 1000; return r.toString(); }
+  const r = Math.round(n * 10) / 10;
+  return r % 1 === 0 ? r.toFixed(0) : r.toFixed(1);
+}
+function fmtPct(n, total) {
+  if (!total) return '—';
+  return (n / total * 100).toFixed(1) + '%';
+}
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════
+// HTML BUILDERS
+// ═══════════════════════════════════════════════
+function ingredientRows(items, id, section, refTotal) {
+  return items.map((item, idx) => {
+    const pctVal = refTotal ? (item.grams / refTotal * 100) : 0;
+    return `
+    <tr data-idx="${idx}">
+      <td>
+        <input class="cell-in name-in"
+          data-recipe="${id}" data-section="${section}" data-idx="${idx}" data-field="name"
+          type="text" value="${esc(item.name)}" placeholder="Nome" />
+      </td>
+      <td class="num-td">
+        <input class="cell-in num-in"
+          data-recipe="${id}" data-section="${section}" data-idx="${idx}" data-field="grams"
+          type="number" min="0" step="any" value="${fmt(item.grams)}" />
+      </td>
+      <td class="num-td">
+        <input class="cell-in num-in"
+          data-recipe="${id}" data-section="${section}" data-idx="${idx}" data-field="pct"
+          type="number" min="0" step="0.1" value="${pctVal.toFixed(1)}" />
+      </td>
+      <td class="del-td">
+        <button class="del-btn"
+          data-recipe="${id}" data-section="${section}" data-idx="${idx}"
+          aria-label="Remover">×</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function sectionCard(id, section, items, totalGrams, refTotal, title, addLabel) {
+  const rows = ingredientRows(items, id, section, refTotal);
+  const totalPctStr = section === 'flour' ? '100%' : fmtPct(totalGrams, refTotal);
+  return `
+  <div class="card">
+    <div class="card-title">${title}</div>
+    <table data-recipe="${id}" data-section="${section}">
+      <thead>
+        <tr>
+          <th>Ingrediente</th>
+          <th style="text-align:right">g</th>
+          <th style="text-align:right">%</th>
+          <th class="del-col"></th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td class="total-g" data-recipe="${id}" data-section="${section}">${fmt(totalGrams)} g</td>
+          <td class="total-p" data-recipe="${id}" data-section="${section}">${totalPctStr}</td>
+          <td class="del-td"></td>
+        </tr>
+      </tfoot>
+    </table>
+    <button class="add-btn" data-recipe="${id}" data-section="${section}">
+      + ${addLabel}
+    </button>
+  </div>`;
+}
+
+function divisionCard(id, s) {
+  const tmc = actualTmc(s);
+  return `
+  <div class="card">
+    <div class="card-title">Divisão de Massa</div>
+    <div class="div-row">
+      <div class="div-group">
+        <label>Unidades</label>
+        <div class="stepper">
+          <button class="step-btn" data-recipe="${id}" data-field="units" data-delta="-1">−</button>
+          <input class="division-in" data-recipe="${id}" data-field="units"
+            type="number" min="1" step="1" value="${s.units}" />
+          <button class="step-btn" data-recipe="${id}" data-field="units" data-delta="1">+</button>
+        </div>
+      </div>
+      <div class="div-op">×</div>
+      <div class="div-group">
+        <label>Peso (g)</label>
+        <div class="stepper">
+          <button class="step-btn" data-recipe="${id}" data-field="weight" data-delta="-50">−</button>
+          <input class="division-in" data-recipe="${id}" data-field="weight"
+            type="number" min="50" step="50" value="${s.weight}" />
+          <button class="step-btn" data-recipe="${id}" data-field="weight" data-delta="50">+</button>
+        </div>
+      </div>
+      <div class="div-op">=</div>
+      <div class="div-result">
+        <span class="tmc" id="tmc-${id}">${fmt(tmc)}</span>
+        <span class="tmc-lbl">g na massa</span>
+      </div>
+    </div>
+    <button class="reset-btn" data-recipe="${id}">↺ Restaurar padrão</button>
+  </div>`;
+}
+
+function levainCardHTML(lev) {
+  if (!lev) return '';
+  const compRows = lev.components
+    .filter(c => c.ratio > 0)
+    .map(c => `
+    <tr>
+      <td>${esc(c.name)}</td>
+      <td>${c.ratio}</td>
+      <td>${fmt(c.grams)} g</td>
+    </tr>`).join('');
+  return `
+  <div class="card">
+    <div class="card-title">Levain</div>
+    <div class="levain-pill">Precisa de <strong>${fmt(lev.needed)} g</strong></div>
+    <table>
+      <thead><tr><th>Ingrediente</th><th style="text-align:right">Proporção</th><th style="text-align:right">Gramas</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Levain Starter</td>
+          <td style="text-align:right">${lev.starterRatio}</td>
+          <td style="text-align:right">${fmt(lev.starterGrams)} g</td>
+        </tr>
+        ${compRows}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td style="text-align:right">${lev.totalRatio}</td>
+          <td style="text-align:right">${fmt(lev.needed)} g</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>`;
+}
+
+function soakerCardHTML(id, s) {
+  const def = DEFAULTS[id];
+  if (!def.soaker) return '';
+  const baseTotal = def.flours.reduce((a, f) => a + f.grams, 0)
+                  + def.ingredients.reduce((a, i) => a + i.grams, 0);
+  const curTotal  = actualTmc(s);
+  const scale     = baseTotal > 0 ? curTotal / baseTotal : 1;
+  const items     = def.soaker.items.map(i => ({ name: i.name, grams: i.grams * scale }));
+  const total     = items.reduce((a, i) => a + i.grams, 0);
+  const rows      = items.map(i => `<tr><td>${esc(i.name)}</td><td colspan="2" style="text-align:right">${fmt(i.grams)} g</td></tr>`).join('');
+  return `
+  <div class="card">
+    <div class="card-title">${esc(def.soaker.name)} <span class="badge-prep">Prep antecipado</span></div>
+    <table>
+      <thead><tr><th>Ingrediente</th><th style="text-align:right">Gramas</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td>Total</td><td colspan="2" style="text-align:right">${fmt(total)} g</td></tr></tfoot>
+    </table>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+function renderRecipe(id) {
+  const def = DEFAULTS[id];
+  const s   = getState(id);
+  const tf  = totalFlour(s);
+  const ti  = totalIngredients(s);
+  const lev = calcLevain(s, id);
+
+  document.getElementById(`view-${id}`).innerHTML = `
+    <div class="rx-head">
+      <h2>${esc(def.name)}</h2>
+      <p>${esc(def.subtitle)}</p>
+    </div>
+    ${divisionCard(id, s)}
+    ${sectionCard(id, 'flour',      s.flours,      tf, tf, 'Farinhas',     'Farinha')}
+    ${sectionCard(id, 'ingredient', s.ingredients, ti, tf, 'Ingredientes', 'Ingrediente')}
+    <div id="levain-${id}">${levainCardHTML(lev)}</div>
+    ${soakerCardHTML(id, s)}
+  `;
+}
+
+function renderFermento() {
+  const fs = getFermentoState();
+  const cards = LEVAIN_TYPES.map(type => {
+    const needed = fs[type.id];
+    const calc   = calcFermentoType(type, needed);
+    const compRows = calc.components.map(c => `
+      <tr>
+        <td>${esc(c.name)}</td>
+        <td style="text-align:right;color:var(--muted)">${c.ratio}</td>
+        <td style="text-align:right">${fmt(c.grams)} g</td>
+      </tr>`).join('');
+    return `
+    <div class="card">
+      <div class="card-title">${esc(type.name)}</div>
+      <div class="needed-row">
+        <span class="needed-lbl">Quantidade necessária</span>
+        <div class="stepper">
+          <button class="ferm-step" data-type="${type.id}" data-delta="-25">−</button>
+          <input class="ferm-in" data-type="${type.id}"
+            type="number" min="10" step="25" value="${needed}" />
+          <button class="ferm-step" data-type="${type.id}" data-delta="25">+</button>
+        </div>
+        <span class="g-unit">g</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Ingrediente</th>
+            <th style="text-align:right">Proporção</th>
+            <th style="text-align:right">Gramas</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Levain Starter</td>
+            <td style="text-align:right;color:var(--muted)">${type.starter}</td>
+            <td style="text-align:right">${fmt(calc.starterGrams)} g</td>
+          </tr>
+          ${compRows}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>Total</td>
+            <td style="text-align:right">${calc.totalRatio}</td>
+            <td style="text-align:right">${fmt(needed)} g</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>`;
+  }).join('');
+
+  document.getElementById('view-fermento').innerHTML = `
+    <div class="rx-head">
+      <h2>Cálculo do Fermento</h2>
+      <p>Alimentação do Levain</p>
+    </div>
+    ${cards}
+  `;
+}
+
+// ── Targeted DOM update (no re-render, keeps focus) ──
+function syncDOM(id) {
+  const s  = getState(id);
+  const tf = totalFlour(s);
+  const ti = totalIngredients(s);
+  const tmc = tf + ti;
+  const active = document.activeElement;
+
+  function setVal(el, v) { if (el && el !== active) el.value = v; }
+  function setTxt(el, t) { if (el) el.textContent = t; }
+
+  const setInput = (sel, v) => setVal(document.querySelector(sel), v);
+  const setCell  = (sel, t) => setTxt(document.querySelector(sel), t);
+
+  // Flour rows
+  s.flours.forEach((f, idx) => {
+    const pct = tf ? (f.grams / tf * 100) : 0;
+    setInput(`.cell-in[data-recipe="${id}"][data-section="flour"][data-idx="${idx}"][data-field="grams"]`, fmt(f.grams));
+    setInput(`.cell-in[data-recipe="${id}"][data-section="flour"][data-idx="${idx}"][data-field="pct"]`,   pct.toFixed(1));
+  });
+  setCell(`.total-g[data-recipe="${id}"][data-section="flour"]`, fmt(tf) + ' g');
+  setCell(`.total-p[data-recipe="${id}"][data-section="flour"]`, '100%');
+
+  // Ingredient rows
+  s.ingredients.forEach((item, idx) => {
+    const pct = tf ? (item.grams / tf * 100) : 0;
+    setInput(`.cell-in[data-recipe="${id}"][data-section="ingredient"][data-idx="${idx}"][data-field="grams"]`, fmt(item.grams));
+    setInput(`.cell-in[data-recipe="${id}"][data-section="ingredient"][data-idx="${idx}"][data-field="pct"]`,   pct.toFixed(1));
+  });
+  setCell(`.total-g[data-recipe="${id}"][data-section="ingredient"]`, fmt(ti) + ' g');
+  setCell(`.total-p[data-recipe="${id}"][data-section="ingredient"]`, fmtPct(ti, tf));
+
+  // TMC
+  setCell(`#tmc-${id}`, fmt(tmc));
+
+  // Levain
+  const levEl = document.getElementById(`levain-${id}`);
+  if (levEl) levEl.innerHTML = levainCardHTML(calcLevain(s, id));
+}
+
+// ═══════════════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════════════
+document.querySelector('main').addEventListener('input', e => {
+  const t = e.target;
+  const id      = t.dataset.recipe;
+  const section = t.dataset.section;
+  const idx     = parseInt(t.dataset.idx);
+  const field   = t.dataset.field;
+
+  // ── Recipe ingredient fields ──
+  if (id && section && !isNaN(idx) && field) {
+    const s    = getState(id);
+    const arr  = section === 'flour' ? s.flours : s.ingredients;
+    const item = arr[idx];
+    if (!item) return;
+
+    if (field === 'name') {
+      item.name = t.value;
+      setState(id, s);
+      return; // no DOM sync needed for name
+    }
+
+    if (field === 'grams') {
+      const g = parseFloat(t.value);
+      if (isNaN(g) || g < 0) return;
+      item.grams = g;
+      setState(id, s);
+      syncDOM(id);
+      return;
+    }
+
+    if (field === 'pct') {
+      const p = parseFloat(t.value);
+      if (isNaN(p) || p < 0) return;
+      const tf = totalFlour(s);
+      if (section === 'flour') {
+        // new grams = snapshot_totalFlour * (pct/100)
+        item.grams = tf * (p / 100);
+      } else {
+        item.grams = tf * (p / 100);
+      }
+      setState(id, s);
+      syncDOM(id);
+      return;
+    }
+  }
+
+  // ── Fermento needed input ──
+  if (t.classList.contains('ferm-in')) {
+    const n = parseFloat(t.value);
+    if (!isNaN(n) && n >= 10) {
+      setFermentoState({ [t.dataset.type]: n });
+      renderFermento();
+    }
+  }
+});
+
+document.querySelector('main').addEventListener('change', e => {
+  const t = e.target;
+  if (!t.classList.contains('division-in')) return;
+
+  const id    = t.dataset.recipe;
+  const field = t.dataset.field;
+  const val   = parseFloat(t.value);
+  if (isNaN(val) || val <= 0) { t.value = getState(id)[field]; return; }
+
+  applyScale(id, field, val);
+});
+
+document.querySelector('main').addEventListener('click', e => {
+  const t = e.target;
+
+  // ── Step buttons (units/weight) ──
+  if (t.classList.contains('step-btn')) {
+    const id    = t.dataset.recipe;
+    const field = t.dataset.field;
+    const delta = parseFloat(t.dataset.delta);
+    const s     = getState(id);
+    const cur   = s[field] || (field === 'units' ? 1 : 100);
+    const min   = field === 'units' ? 1 : 50;
+    const nv    = Math.max(min, field === 'units' ? Math.round(cur + delta) : cur + delta);
+    applyScale(id, field, nv);
+    return;
+  }
+
+  // ── Reset button ──
+  if (t.classList.contains('reset-btn')) {
+    const id  = t.dataset.recipe;
+    const def = DEFAULTS[id];
+    setState(id, {
+      units: def.units, weight: def.weight,
+      flours:      def.flours.map(f => ({ ...f })),
+      ingredients: def.ingredients.map(i => ({ ...i })),
+    });
+    renderRecipe(id);
+    return;
+  }
+
+  // ── Delete row ──
+  if (t.classList.contains('del-btn')) {
+    const id      = t.dataset.recipe;
+    const section = t.dataset.section;
+    const idx     = parseInt(t.dataset.idx);
+    const s       = getState(id);
+    const arr     = section === 'flour' ? s.flours : s.ingredients;
+    if (section === 'flour' && arr.length <= 1) return; // need ≥ 1 flour
+    arr.splice(idx, 1);
+    setState(id, s);
+    renderRecipe(id);
+    return;
+  }
+
+  // ── Add row ──
+  if (t.classList.contains('add-btn')) {
+    const id      = t.dataset.recipe;
+    const section = t.dataset.section;
+    const s       = getState(id);
+    const arr     = section === 'flour' ? s.flours : s.ingredients;
+    arr.push({ name: '', grams: 0, isLevain: false });
+    setState(id, s);
+    renderRecipe(id);
+    // focus the new name input
+    const newIdx = arr.length - 1;
+    setTimeout(() => {
+      const el = document.querySelector(
+        `.name-in[data-recipe="${id}"][data-section="${section}"][data-idx="${newIdx}"]`
+      );
+      if (el) el.focus();
+    }, 0);
+    return;
+  }
+
+  // ── Fermento step buttons ──
+  if (t.classList.contains('ferm-step')) {
+    const typeId = t.dataset.type;
+    const delta  = parseFloat(t.dataset.delta);
+    const cur    = getFermentoState()[typeId] || 200;
+    const nv     = Math.max(10, cur + delta);
+    setFermentoState({ [typeId]: nv });
+    renderFermento();
+    return;
+  }
+});
+
+function applyScale(id, field, newVal) {
+  const s     = getState(id);
+  const cur   = actualTmc(s);
+  const newU  = field === 'units'  ? newVal : s.units;
+  const newW  = field === 'weight' ? newVal : s.weight;
+  const newTmc = newU * newW;
+  const scale  = cur > 0 ? newTmc / cur : 1;
+
+  s.units   = newU;
+  s.weight  = newW;
+  s.flours      = s.flours.map(f => ({ ...f, grams: f.grams * scale }));
+  s.ingredients = s.ingredients.map(i => ({ ...i, grams: i.grams * scale }));
+  setState(id, s);
+  renderRecipe(id);
+}
+
+// ── Tabs ──
+document.querySelector('nav.tabs').addEventListener('click', e => {
+  const btn = e.target.closest('[data-tab]');
+  if (!btn) return;
+  switchTab(btn.dataset.tab);
+});
+
+function switchTab(id) {
+  document.querySelectorAll('.tabs [data-tab]').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === id)
+  );
+  document.querySelectorAll('.view').forEach(v =>
+    v.classList.toggle('active', v.id === `view-${id}`)
+  );
+  saveAll({ activeTab: id });
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+(function init() {
+  RECIPE_IDS.forEach(id => renderRecipe(id));
+  renderFermento();
+  switchTab(loadAll().activeTab || 'rustico');
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+</script>
+</body>
+</html>
