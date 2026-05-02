@@ -651,8 +651,8 @@ function levainCardHTML(lev) {
     .map(c => `
     <tr>
       <td>${esc(c.name)}</td>
-      <td>${c.ratio}</td>
-      <td>${fmt(c.grams)} g</td>
+      <td style="text-align:right">${c.ratio}</td>
+      <td style="text-align:right">${fmt(c.grams)} g</td>
     </tr>`).join('');
   return `
   <div class="card">
@@ -858,11 +858,20 @@ document.querySelector('main').addEventListener('input', e => {
     if (field === 'pct') {
       const p = parseFloat(t.value);
       if (isNaN(p) || p < 0) return;
-      const tf = totalFlour(s);
       if (section === 'flour') {
-        // new grams = snapshot_totalFlour * (pct/100)
-        item.grams = tf * (p / 100);
+        if (p > 100) return;
+        const tf = totalFlour(s);
+        if (tf === 0) return;
+        const newItemGrams = tf * (p / 100);
+        const oldOthersTotal = arr.filter((_, i) => i !== idx).reduce((a, f) => a + (f.grams || 0), 0);
+        const newOthersTotal = tf - newItemGrams;
+        item.grams = newItemGrams;
+        if (oldOthersTotal > 0) {
+          const scale = newOthersTotal / oldOthersTotal;
+          arr.forEach((f, i) => { if (i !== idx) f.grams = f.grams * scale; });
+        }
       } else {
+        const tf = totalFlour(s);
         item.grams = tf * (p / 100);
       }
       setState(id, s);
