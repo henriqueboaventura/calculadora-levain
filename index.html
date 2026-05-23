@@ -9,6 +9,9 @@
   <meta name="apple-mobile-web-app-title" content="Levain" />
   <title>Levain</title>
   <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/x-icon"  href="favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="apple-touch-icon"          href="apple-touch-icon.png" />
   <style>
     :root {
       --bg:           #FAF6EE;
@@ -237,6 +240,7 @@
       transition: opacity .1s, color .1s, background .1s;
     }
     .del-btn:hover { opacity: 1; color: var(--danger); background: #fdf0ee; }
+    .cell-in[readonly] { opacity: .55; cursor: default; pointer-events: none; }
 
     tfoot td {
       padding: 10px 0 2px;
@@ -322,6 +326,7 @@
   <button data-tab="integral" role="tab"><span class="ti">🌾</span><span class="tl">Integral</span></button>
   <button data-tab="doce"     role="tab"><span class="ti">🍰</span><span class="tl">Doce</span></button>
   <button data-tab="pizza"    role="tab"><span class="ti">🍕</span><span class="tl">Pizza</span></button>
+  <button data-tab="centeio"  role="tab"><span class="ti">🌑</span><span class="tl">Centeio</span></button>
   <button data-tab="fermento" role="tab"><span class="ti">🧫</span><span class="tl">Fermento</span></button>
 </nav>
 
@@ -330,6 +335,7 @@
   <div id="view-integral" class="view"></div>
   <div id="view-doce"     class="view"></div>
   <div id="view-pizza"    class="view"></div>
+  <div id="view-centeio"  class="view"></div>
   <div id="view-fermento" class="view"></div>
 </main>
 
@@ -422,9 +428,29 @@ const DEFAULTS = {
       { name: 'Sal Refinado',       grams: 7.2,  isLevain: false },
     ],
   },
+  centeio: {
+    name: 'Centeio', subtitle: 'Pão de Centeio',
+    units: 2, weight: 500,
+    flours: [
+      { name: 'Farinha de Centeio', grams: 500 },
+      { name: 'Farinha de Trigo',   grams: 100 },
+    ],
+    ingredients: [
+      { name: 'Água',         grams: 420, isLevain: false },
+      { name: 'Levain',       grams: 150, isLevain: true  },
+      { name: 'Sal Refinado', grams: 12,  isLevain: false },
+    ],
+    levainRatios: {
+      starter: 0.5,
+      components: [
+        { name: 'Farinha de Centeio', ratio: 1.0 },
+        { name: 'Água',               ratio: 1.0 },
+      ],
+    },
+  },
 };
 
-const RECIPE_IDS = ['rustico', 'integral', 'doce', 'pizza'];
+const RECIPE_IDS = ['rustico', 'integral', 'doce', 'pizza', 'centeio'];
 
 const LEVAIN_TYPES = [
   {
@@ -550,8 +576,12 @@ function esc(s) {
 // HTML BUILDERS
 // ═══════════════════════════════════════════════
 function ingredientRows(items, id, section, refTotal) {
+  const pctEditable = section === 'flour';
   return items.map((item, idx) => {
     const pctVal = refTotal ? (item.grams / refTotal * 100) : 0;
+    const pctAttrs = pctEditable
+      ? `data-recipe="${id}" data-section="${section}" data-idx="${idx}" data-field="pct"`
+      : `data-recipe="${id}" data-section="${section}" data-idx="${idx}" data-role="pct-display" readonly tabindex="-1"`;
     return `
     <tr data-idx="${idx}">
       <td>
@@ -565,8 +595,7 @@ function ingredientRows(items, id, section, refTotal) {
           type="number" min="0" step="any" value="${fmt(item.grams)}" />
       </td>
       <td class="num-td">
-        <input class="cell-in num-in"
-          data-recipe="${id}" data-section="${section}" data-idx="${idx}" data-field="pct"
+        <input class="cell-in num-in" ${pctAttrs}
           type="number" min="0" step="0.1" value="${pctVal.toFixed(1)}" />
       </td>
       <td class="del-td">
@@ -810,7 +839,7 @@ function syncDOM(id) {
   s.ingredients.forEach((item, idx) => {
     const pct = tf ? (item.grams / tf * 100) : 0;
     setInput(`.cell-in[data-recipe="${id}"][data-section="ingredient"][data-idx="${idx}"][data-field="grams"]`, fmt(item.grams));
-    setInput(`.cell-in[data-recipe="${id}"][data-section="ingredient"][data-idx="${idx}"][data-field="pct"]`,   pct.toFixed(1));
+    setInput(`.cell-in[data-recipe="${id}"][data-section="ingredient"][data-idx="${idx}"][data-role="pct-display"]`, pct.toFixed(1));
   });
   setCell(`.total-g[data-recipe="${id}"][data-section="ingredient"]`, fmt(ti) + ' g');
   setCell(`.total-p[data-recipe="${id}"][data-section="ingredient"]`, fmtPct(ti, tf));
@@ -855,24 +884,18 @@ document.querySelector('main').addEventListener('input', e => {
       return;
     }
 
-    if (field === 'pct') {
+    if (field === 'pct' && section === 'flour') {
       const p = parseFloat(t.value);
-      if (isNaN(p) || p < 0) return;
-      if (section === 'flour') {
-        if (p > 100) return;
-        const tf = totalFlour(s);
-        if (tf === 0) return;
-        const newItemGrams = tf * (p / 100);
-        const oldOthersTotal = arr.filter((_, i) => i !== idx).reduce((a, f) => a + (f.grams || 0), 0);
-        const newOthersTotal = tf - newItemGrams;
-        item.grams = newItemGrams;
-        if (oldOthersTotal > 0) {
-          const scale = newOthersTotal / oldOthersTotal;
-          arr.forEach((f, i) => { if (i !== idx) f.grams = f.grams * scale; });
-        }
-      } else {
-        const tf = totalFlour(s);
-        item.grams = tf * (p / 100);
+      if (isNaN(p) || p < 0 || p > 100) return;
+      const tf = totalFlour(s);
+      if (tf === 0) return;
+      const newItemGrams = tf * (p / 100);
+      const oldOthersTotal = arr.filter((_, i) => i !== idx).reduce((a, f) => a + (f.grams || 0), 0);
+      const newOthersTotal = tf - newItemGrams;
+      item.grams = newItemGrams;
+      if (oldOthersTotal > 0) {
+        const scale = newOthersTotal / oldOthersTotal;
+        arr.forEach((f, i) => { if (i !== idx) f.grams = f.grams * scale; });
       }
       setState(id, s);
       syncDOM(id);
@@ -1017,7 +1040,21 @@ function switchTab(id) {
   RECIPE_IDS.forEach(id => renderRecipe(id));
   renderFermento();
   switchTab(loadAll().activeTab || 'rustico');
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+    // Reload when a new SW version takes control (skipWaiting + clients.claim triggers this)
+    let swRefreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!swRefreshing) { swRefreshing = true; window.location.reload(); }
+    });
+    // Also handle direct message from SW
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data?.type === 'SW_UPDATED' && !swRefreshing) {
+        swRefreshing = true;
+        window.location.reload();
+      }
+    });
+  }
 })();
 </script>
 </body>

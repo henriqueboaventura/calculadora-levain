@@ -1,20 +1,55 @@
-const CACHE = 'levain-v1';
-const FILES = ['./', './index.html', './manifest.json'];
+// ⚠️  Bump this version on every deploy to force cache refresh
+const VERSION = 'levain-v3';
+const STATIC  = [
+  './', './index.html', './manifest.json',
+  './icon.svg', './icon-192.png', './icon-512.png',
+  './apple-touch-icon.png', './favicon.ico',
+];
 
+// ── Install: cache all static files ──────────────────────────
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-  ));
-  self.clients.claim();
-});
-
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+  e.waitUntil(
+    caches.open(VERSION).then(c => c.addAll(STATIC))
   );
+  self.skipWaiting(); // activate immediately, don't wait for old tabs to close
+});
+
+// ── Activate: delete old caches, claim all clients ───────────
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== VERSION).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
+      .then(() => {
+        // Tell all open tabs: new version is live
+        self.clients.matchAll({ type: 'window' }).then(clients =>
+          clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' }))
+        );
+      })
+  );
+});
+
+// ── Fetch: network-first for HTML, cache-first for the rest ──
+self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+  const isHtml = url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname === '';
+
+  if (isHtml) {
+    // Always try network first so new deploys are picked up immediately
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          const clone = res.clone();
+          caches.open(VERSION).then(c => c.put(e.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(e.request)) // offline fallback
+    );
+  } else {
+    e.respondWith(
+      caches.match(e.request).then(r => r || fetch(e.request))
+    );
+  }
 });
