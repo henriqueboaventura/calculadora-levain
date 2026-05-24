@@ -350,13 +350,13 @@ const DEFAULTS = {
     name: 'Rústico', subtitle: 'Base Branca',
     units: 2, weight: 600,
     flours: [
-      { name: 'Farinha de Trigo', grams: 610 },
-      { name: 'Farinha Integral',  grams: 30  },
+      { name: 'Farinha de Trigo', pct: 95.3 },
+      { name: 'Farinha Integral',  pct: 4.7  },
     ],
     ingredients: [
-      { name: 'Água',         grams: 420,  isLevain: false },
-      { name: 'Levain',       grams: 130,  isLevain: true  },
-      { name: 'Sal Refinado', grams: 12.8, isLevain: false },
+      { name: 'Água',         pct: 65.6, isLevain: false },
+      { name: 'Levain',       pct: 20.3, isLevain: true  },
+      { name: 'Sal Refinado', pct: 2.0,  isLevain: false },
     ],
     levainRatios: {
       starter: 0.5,
@@ -370,14 +370,14 @@ const DEFAULTS = {
     name: 'Integral Grãos', subtitle: 'Multigrãos',
     units: 2, weight: 600,
     flours: [
-      { name: 'Farinha de Trigo', grams: 170 },
-      { name: 'Farinha Integral',  grams: 400 },
+      { name: 'Farinha de Trigo', pct: 29.8 },
+      { name: 'Farinha Integral',  pct: 70.2 },
     ],
     ingredients: [
-      { name: 'Água',                grams: 400, isLevain: false },
-      { name: 'Levain',              grams: 110, isLevain: true  },
-      { name: 'Sal Refinado',        grams: 10,  isLevain: false },
-      { name: 'Multigrãos (Soaker)', grams: 110, isLevain: false },
+      { name: 'Água',                pct: 70.2, isLevain: false },
+      { name: 'Levain',              pct: 19.3, isLevain: true  },
+      { name: 'Sal Refinado',        pct: 1.8,  isLevain: false },
+      { name: 'Multigrãos (Soaker)', pct: 19.3, isLevain: false },
     ],
     levainRatios: {
       starter: 0.5,
@@ -389,8 +389,8 @@ const DEFAULTS = {
     soaker: {
       name: 'Soaker dos Grãos',
       items: [
-        { name: 'Grãos', grams: 60 },
-        { name: 'Água',  grams: 60 },
+        { name: 'Grãos', pct: 10.5 },
+        { name: 'Água',  pct: 10.5 },
       ],
     },
   },
@@ -398,14 +398,14 @@ const DEFAULTS = {
     name: 'Doce', subtitle: 'Massa Doce Fofa',
     units: 2, weight: 600,
     flours: [
-      { name: 'Farinha de Trigo', grams: 580 },
+      { name: 'Farinha de Trigo', pct: 100 },
     ],
     ingredients: [
-      { name: 'Água',             grams: 350, isLevain: false },
-      { name: 'Açúcar',           grams: 60,  isLevain: false },
-      { name: 'Levain',           grams: 170, isLevain: true  },
-      { name: 'Óleo de Girassol', grams: 30,  isLevain: false },
-      { name: 'Sal Refinado',     grams: 10,  isLevain: false },
+      { name: 'Água',             pct: 60.3, isLevain: false },
+      { name: 'Açúcar',           pct: 10.3, isLevain: false },
+      { name: 'Levain',           pct: 29.3, isLevain: true  },
+      { name: 'Óleo de Girassol', pct: 5.2,  isLevain: false },
+      { name: 'Sal Refinado',     pct: 1.7,  isLevain: false },
     ],
     levainRatios: {
       starter: 0.5,
@@ -419,26 +419,26 @@ const DEFAULTS = {
     name: 'Pizza', subtitle: 'Massa de Pizza',
     units: 2, weight: 300,
     flours: [
-      { name: 'Farinha de Trigo', grams: 360 },
+      { name: 'Farinha de Trigo', pct: 100 },
     ],
     ingredients: [
-      { name: 'Água',               grams: 230,  isLevain: false },
-      { name: 'Azeite',             grams: 10,   isLevain: false },
-      { name: 'Fermento Biológico', grams: 0.36, isLevain: false },
-      { name: 'Sal Refinado',       grams: 7.2,  isLevain: false },
+      { name: 'Água',               pct: 63.9, isLevain: false },
+      { name: 'Azeite',             pct: 2.8,  isLevain: false },
+      { name: 'Fermento Biológico', pct: 0.1,  isLevain: false },
+      { name: 'Sal Refinado',       pct: 2.0,  isLevain: false },
     ],
   },
   centeio: {
     name: 'Centeio', subtitle: 'Pão de Centeio',
     units: 2, weight: 500,
     flours: [
-      { name: 'Farinha de Centeio', grams: 500 },
-      { name: 'Farinha de Trigo',   grams: 100 },
+      { name: 'Farinha de Centeio', pct: 83.3 },
+      { name: 'Farinha de Trigo',   pct: 16.7 },
     ],
     ingredients: [
-      { name: 'Água',         grams: 420, isLevain: false },
-      { name: 'Levain',       grams: 150, isLevain: true  },
-      { name: 'Sal Refinado', grams: 12,  isLevain: false },
+      { name: 'Água',         pct: 70.0, isLevain: false },
+      { name: 'Levain',       pct: 25.0, isLevain: true  },
+      { name: 'Sal Refinado', pct: 2.0,  isLevain: false },
     ],
     levainRatios: {
       starter: 0.5,
@@ -483,7 +483,7 @@ const LEVAIN_TYPES = [
 // ═══════════════════════════════════════════════
 // STORAGE
 // ═══════════════════════════════════════════════
-const LS_KEY = 'levain_v2';
+const LS_KEY = 'levain_v3';
 
 function loadAll() {
   try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { return {}; }
@@ -520,20 +520,24 @@ function setFermentoState(patch) {
 }
 
 // ═══════════════════════════════════════════════
-// MATH
+// MATH  (pct is source of truth; grams are derived)
 // ═══════════════════════════════════════════════
-function totalFlour(s) { return s.flours.reduce((a, f) => a + (f.grams || 0), 0); }
-function totalIngredients(s) { return s.ingredients.reduce((a, i) => a + (i.grams || 0), 0); }
-function actualTmc(s) { return totalFlour(s) + totalIngredients(s); }
+function targetDough(s)      { return (s.units || 1) * (s.weight || 0); }
+function sumIngredientPct(s) { return s.ingredients.reduce((a, i) => a + (i.pct || 0), 0); }
+function totalFlour(s) {
+  const sp = sumIngredientPct(s);
+  return targetDough(s) / (1 + sp / 100);
+}
 
 function calcLevain(s, id) {
   const def = DEFAULTS[id];
   if (!def.levainRatios) return null;
   const item = s.ingredients.find(i => i.isLevain);
-  if (!item || !(item.grams > 0)) return null;
+  if (!item || !(item.pct > 0)) return null;
+  const tf = totalFlour(s);
+  const needed = tf * item.pct / 100;
   const { starter, components } = def.levainRatios;
   const totalRatio = starter + components.reduce((a, c) => a + c.ratio, 0);
-  const needed = item.grams;
   return {
     needed,
     starterRatio: starter,
@@ -564,10 +568,7 @@ function fmt(n) {
   const r = Math.round(n * 10) / 10;
   return r % 1 === 0 ? r.toFixed(0) : r.toFixed(1);
 }
-function fmtPct(n, total) {
-  if (!total) return '—';
-  return (n / total * 100).toFixed(1) + '%';
-}
+
 function esc(s) {
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -575,13 +576,9 @@ function esc(s) {
 // ═══════════════════════════════════════════════
 // HTML BUILDERS
 // ═══════════════════════════════════════════════
-function ingredientRows(items, id, section, refTotal) {
-  const pctEditable = section === 'flour';
+function ingredientRows(items, id, section, tf) {
   return items.map((item, idx) => {
-    const pctVal = refTotal ? (item.grams / refTotal * 100) : 0;
-    const pctAttrs = pctEditable
-      ? `data-recipe="${id}" data-section="${section}" data-idx="${idx}" data-field="pct"`
-      : `data-recipe="${id}" data-section="${section}" data-idx="${idx}" data-role="pct-display" readonly tabindex="-1"`;
+    const grams = tf * (item.pct || 0) / 100;
     return `
     <tr data-idx="${idx}">
       <td>
@@ -591,12 +588,13 @@ function ingredientRows(items, id, section, refTotal) {
       </td>
       <td class="num-td">
         <input class="cell-in num-in"
-          data-recipe="${id}" data-section="${section}" data-idx="${idx}" data-field="grams"
-          type="number" min="0" step="any" value="${fmt(item.grams)}" />
+          data-recipe="${id}" data-section="${section}" data-idx="${idx}" data-role="grams-display"
+          type="number" value="${fmt(grams)}" readonly tabindex="-1" />
       </td>
       <td class="num-td">
-        <input class="cell-in num-in" ${pctAttrs}
-          type="number" min="0" step="0.1" value="${pctVal.toFixed(1)}" />
+        <input class="cell-in num-in"
+          data-recipe="${id}" data-section="${section}" data-idx="${idx}" data-field="pct"
+          type="number" min="0" step="0.1" value="${(item.pct || 0).toFixed(1)}" />
       </td>
       <td class="del-td">
         <button class="del-btn"
@@ -607,9 +605,10 @@ function ingredientRows(items, id, section, refTotal) {
   }).join('');
 }
 
-function sectionCard(id, section, items, totalGrams, refTotal, title, addLabel) {
-  const rows = ingredientRows(items, id, section, refTotal);
-  const totalPctStr = section === 'flour' ? '100%' : fmtPct(totalGrams, refTotal);
+function sectionCard(id, section, items, tf, title, addLabel) {
+  const rows     = ingredientRows(items, id, section, tf);
+  const totalPct = items.reduce((a, i) => a + (i.pct || 0), 0);
+  const totalG   = tf * totalPct / 100;
   return `
   <div class="card">
     <div class="card-title">${title}</div>
@@ -626,8 +625,8 @@ function sectionCard(id, section, items, totalGrams, refTotal, title, addLabel) 
       <tfoot>
         <tr>
           <td>Total</td>
-          <td class="total-g" data-recipe="${id}" data-section="${section}">${fmt(totalGrams)} g</td>
-          <td class="total-p" data-recipe="${id}" data-section="${section}">${totalPctStr}</td>
+          <td class="total-g" data-recipe="${id}" data-section="${section}">${fmt(totalG)} g</td>
+          <td class="total-p" data-recipe="${id}" data-section="${section}">${totalPct.toFixed(1)}%</td>
           <td class="del-td"></td>
         </tr>
       </tfoot>
@@ -639,7 +638,7 @@ function sectionCard(id, section, items, totalGrams, refTotal, title, addLabel) 
 }
 
 function divisionCard(id, s) {
-  const tmc = actualTmc(s);
+  const tmc = targetDough(s);
   return `
   <div class="card">
     <div class="card-title">Divisão de Massa</div>
@@ -711,13 +710,10 @@ function levainCardHTML(lev) {
 function soakerCardHTML(id, s) {
   const def = DEFAULTS[id];
   if (!def.soaker) return '';
-  const baseTotal = def.flours.reduce((a, f) => a + f.grams, 0)
-                  + def.ingredients.reduce((a, i) => a + i.grams, 0);
-  const curTotal  = actualTmc(s);
-  const scale     = baseTotal > 0 ? curTotal / baseTotal : 1;
-  const items     = def.soaker.items.map(i => ({ name: i.name, grams: i.grams * scale }));
-  const total     = items.reduce((a, i) => a + i.grams, 0);
-  const rows      = items.map(i => `<tr><td>${esc(i.name)}</td><td colspan="2" style="text-align:right">${fmt(i.grams)} g</td></tr>`).join('');
+  const tf    = totalFlour(s);
+  const items = def.soaker.items.map(i => ({ name: i.name, grams: tf * i.pct / 100 }));
+  const total = items.reduce((a, i) => a + i.grams, 0);
+  const rows  = items.map(i => `<tr><td>${esc(i.name)}</td><td colspan="2" style="text-align:right">${fmt(i.grams)} g</td></tr>`).join('');
   return `
   <div class="card">
     <div class="card-title">${esc(def.soaker.name)} <span class="badge-prep">Prep antecipado</span></div>
@@ -736,7 +732,6 @@ function renderRecipe(id) {
   const def = DEFAULTS[id];
   const s   = getState(id);
   const tf  = totalFlour(s);
-  const ti  = totalIngredients(s);
   const lev = calcLevain(s, id);
 
   document.getElementById(`view-${id}`).innerHTML = `
@@ -745,8 +740,8 @@ function renderRecipe(id) {
       <p>${esc(def.subtitle)}</p>
     </div>
     ${divisionCard(id, s)}
-    ${sectionCard(id, 'flour',      s.flours,      tf, tf, 'Farinhas',     'Farinha')}
-    ${sectionCard(id, 'ingredient', s.ingredients, ti, tf, 'Ingredientes', 'Ingrediente')}
+    ${sectionCard(id, 'flour',      s.flours,      tf, 'Farinhas',     'Farinha')}
+    ${sectionCard(id, 'ingredient', s.ingredients, tf, 'Ingredientes', 'Ingrediente')}
     <div id="levain-${id}">${levainCardHTML(lev)}</div>
     ${soakerCardHTML(id, s)}
   `;
@@ -814,38 +809,38 @@ function renderFermento() {
 
 // ── Targeted DOM update (no re-render, keeps focus) ──
 function syncDOM(id) {
-  const s  = getState(id);
-  const tf = totalFlour(s);
-  const ti = totalIngredients(s);
-  const tmc = tf + ti;
+  const s      = getState(id);
+  const tf     = totalFlour(s);
   const active = document.activeElement;
 
   function setVal(el, v) { if (el && el !== active) el.value = v; }
   function setTxt(el, t) { if (el) el.textContent = t; }
-
   const setInput = (sel, v) => setVal(document.querySelector(sel), v);
   const setCell  = (sel, t) => setTxt(document.querySelector(sel), t);
 
   // Flour rows
+  const flourPctTotal = s.flours.reduce((a, f) => a + (f.pct || 0), 0);
   s.flours.forEach((f, idx) => {
-    const pct = tf ? (f.grams / tf * 100) : 0;
-    setInput(`.cell-in[data-recipe="${id}"][data-section="flour"][data-idx="${idx}"][data-field="grams"]`, fmt(f.grams));
-    setInput(`.cell-in[data-recipe="${id}"][data-section="flour"][data-idx="${idx}"][data-field="pct"]`,   pct.toFixed(1));
+    const g = tf * (f.pct || 0) / 100;
+    setInput(`[data-recipe="${id}"][data-section="flour"][data-idx="${idx}"][data-role="grams-display"]`, fmt(g));
+    setInput(`[data-recipe="${id}"][data-section="flour"][data-idx="${idx}"][data-field="pct"]`, (f.pct || 0).toFixed(1));
   });
   setCell(`.total-g[data-recipe="${id}"][data-section="flour"]`, fmt(tf) + ' g');
-  setCell(`.total-p[data-recipe="${id}"][data-section="flour"]`, '100%');
+  setCell(`.total-p[data-recipe="${id}"][data-section="flour"]`, flourPctTotal.toFixed(1) + '%');
 
   // Ingredient rows
+  const ingPctTotal  = s.ingredients.reduce((a, i) => a + (i.pct || 0), 0);
+  const ingGramsTotal = tf * ingPctTotal / 100;
   s.ingredients.forEach((item, idx) => {
-    const pct = tf ? (item.grams / tf * 100) : 0;
-    setInput(`.cell-in[data-recipe="${id}"][data-section="ingredient"][data-idx="${idx}"][data-field="grams"]`, fmt(item.grams));
-    setInput(`.cell-in[data-recipe="${id}"][data-section="ingredient"][data-idx="${idx}"][data-role="pct-display"]`, pct.toFixed(1));
+    const g = tf * (item.pct || 0) / 100;
+    setInput(`[data-recipe="${id}"][data-section="ingredient"][data-idx="${idx}"][data-role="grams-display"]`, fmt(g));
+    setInput(`[data-recipe="${id}"][data-section="ingredient"][data-idx="${idx}"][data-field="pct"]`, (item.pct || 0).toFixed(1));
   });
-  setCell(`.total-g[data-recipe="${id}"][data-section="ingredient"]`, fmt(ti) + ' g');
-  setCell(`.total-p[data-recipe="${id}"][data-section="ingredient"]`, fmtPct(ti, tf));
+  setCell(`.total-g[data-recipe="${id}"][data-section="ingredient"]`, fmt(ingGramsTotal) + ' g');
+  setCell(`.total-p[data-recipe="${id}"][data-section="ingredient"]`, ingPctTotal.toFixed(1) + '%');
 
   // TMC
-  setCell(`#tmc-${id}`, fmt(tmc));
+  setCell(`#tmc-${id}`, fmt(targetDough(s)));
 
   // Levain
   const levEl = document.getElementById(`levain-${id}`);
@@ -872,30 +867,24 @@ document.querySelector('main').addEventListener('input', e => {
     if (field === 'name') {
       item.name = t.value;
       setState(id, s);
-      return; // no DOM sync needed for name
-    }
-
-    if (field === 'grams') {
-      const g = parseFloat(t.value);
-      if (isNaN(g) || g < 0) return;
-      item.grams = g;
-      setState(id, s);
-      syncDOM(id);
       return;
     }
 
-    if (field === 'pct' && section === 'flour') {
+    if (field === 'pct') {
       const p = parseFloat(t.value);
-      if (isNaN(p) || p < 0 || p > 100) return;
-      const tf = totalFlour(s);
-      if (tf === 0) return;
-      const newItemGrams = tf * (p / 100);
-      const oldOthersTotal = arr.filter((_, i) => i !== idx).reduce((a, f) => a + (f.grams || 0), 0);
-      const newOthersTotal = tf - newItemGrams;
-      item.grams = newItemGrams;
-      if (oldOthersTotal > 0) {
-        const scale = newOthersTotal / oldOthersTotal;
-        arr.forEach((f, i) => { if (i !== idx) f.grams = f.grams * scale; });
+      if (isNaN(p) || p < 0) return;
+
+      if (section === 'flour') {
+        if (p > 100) return;
+        // Redistribute other flours so total stays 100%
+        const oldOthersPct = arr.filter((_, i) => i !== idx).reduce((a, f) => a + (f.pct || 0), 0);
+        item.pct = p;
+        if (oldOthersPct > 0) {
+          const scale = (100 - p) / oldOthersPct;
+          arr.forEach((f, i) => { if (i !== idx) f.pct = (f.pct || 0) * scale; });
+        }
+      } else {
+        item.pct = p;
       }
       setState(id, s);
       syncDOM(id);
@@ -974,7 +963,7 @@ document.querySelector('main').addEventListener('click', e => {
     const section = t.dataset.section;
     const s       = getState(id);
     const arr     = section === 'flour' ? s.flours : s.ingredients;
-    arr.push({ name: '', grams: 0, isLevain: false });
+    arr.push({ name: '', pct: 0, isLevain: false });
     setState(id, s);
     renderRecipe(id);
     // focus the new name input
@@ -1001,17 +990,8 @@ document.querySelector('main').addEventListener('click', e => {
 });
 
 function applyScale(id, field, newVal) {
-  const s     = getState(id);
-  const cur   = actualTmc(s);
-  const newU  = field === 'units'  ? newVal : s.units;
-  const newW  = field === 'weight' ? newVal : s.weight;
-  const newTmc = newU * newW;
-  const scale  = cur > 0 ? newTmc / cur : 1;
-
-  s.units   = newU;
-  s.weight  = newW;
-  s.flours      = s.flours.map(f => ({ ...f, grams: f.grams * scale }));
-  s.ingredients = s.ingredients.map(i => ({ ...i, grams: i.grams * scale }));
+  const s = getState(id);
+  s[field] = newVal;
   setState(id, s);
   renderRecipe(id);
 }
