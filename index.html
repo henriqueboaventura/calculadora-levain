@@ -322,7 +322,7 @@
 </header>
 
 <nav class="tabs" role="tablist" aria-label="Receitas">
-  <button class="active" data-tab="rustico"  role="tab"><span class="ti">🍞</span><span class="tl">Rústico</span></button>
+  <button class="active" data-tab="rustico"  role="tab"><span class="ti">🍞</span><span class="tl">Base</span></button>
   <button data-tab="integral" role="tab"><span class="ti">🌾</span><span class="tl">Integral</span></button>
   <button data-tab="doce"     role="tab"><span class="ti">🍰</span><span class="tl">Doce</span></button>
   <button data-tab="pizza"    role="tab"><span class="ti">🍕</span><span class="tl">Pizza</span></button>
@@ -347,15 +347,14 @@
 // ═══════════════════════════════════════════════
 const DEFAULTS = {
   rustico: {
-    name: 'Rústico', subtitle: 'Base Branca',
+    name: 'Pão Base', subtitle: 'Farinha de Trigo',
     units: 2, weight: 600,
     flours: [
-      { name: 'Farinha de Trigo', pct: 95.3 },
-      { name: 'Farinha Integral',  pct: 4.7  },
+      { name: 'Farinha de Trigo', pct: 100 },
     ],
     ingredients: [
-      { name: 'Água',         pct: 65.6, isLevain: false },
-      { name: 'Levain',       pct: 20.3, isLevain: true  },
+      { name: 'Água',         pct: 65.0, isLevain: false },
+      { name: 'Levain',       pct: 20.0, isLevain: true  },
       { name: 'Sal Refinado', pct: 2.0,  isLevain: false },
     ],
     levainRatios: {
