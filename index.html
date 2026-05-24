@@ -567,6 +567,10 @@ function fmt(n) {
   const r = Math.round(n * 10) / 10;
   return r % 1 === 0 ? r.toFixed(0) : r.toFixed(1);
 }
+function fmtGrams(g, pct) {
+  if (g == null || isNaN(g)) return '—';
+  return pct >= 2 ? String(Math.round(g)) : fmt(g);
+}
 
 function esc(s) {
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -588,7 +592,7 @@ function ingredientRows(items, id, section, tf) {
       <td class="num-td">
         <input class="cell-in num-in"
           data-recipe="${id}" data-section="${section}" data-idx="${idx}" data-role="grams-display"
-          type="number" value="${fmt(grams)}" readonly tabindex="-1" />
+          type="number" value="${fmtGrams(grams, item.pct || 0)}" readonly tabindex="-1" />
       </td>
       <td class="num-td">
         <input class="cell-in num-in"
@@ -624,7 +628,7 @@ function sectionCard(id, section, items, tf, title, addLabel) {
       <tfoot>
         <tr>
           <td>Total</td>
-          <td class="total-g" data-recipe="${id}" data-section="${section}">${fmt(totalG)} g</td>
+          <td class="total-g" data-recipe="${id}" data-section="${section}">${Math.round(totalG)} g</td>
           <td class="total-p" data-recipe="${id}" data-section="${section}">${totalPct.toFixed(1)}%</td>
           <td class="del-td"></td>
         </tr>
@@ -663,7 +667,7 @@ function divisionCard(id, s) {
       </div>
       <div class="div-op">=</div>
       <div class="div-result">
-        <span class="tmc" id="tmc-${id}">${fmt(tmc)}</span>
+        <span class="tmc" id="tmc-${id}">${Math.round(tmc)}</span>
         <span class="tmc-lbl">g na massa</span>
       </div>
     </div>
@@ -679,19 +683,19 @@ function levainCardHTML(lev) {
     <tr>
       <td>${esc(c.name)}</td>
       <td style="text-align:right">${c.ratio}</td>
-      <td style="text-align:right">${fmt(c.grams)} g</td>
+      <td style="text-align:right">${Math.round(c.grams)} g</td>
     </tr>`).join('');
   return `
   <div class="card">
     <div class="card-title">Levain</div>
-    <div class="levain-pill">Precisa de <strong>${fmt(lev.needed)} g</strong></div>
+    <div class="levain-pill">Precisa de <strong>${Math.round(lev.needed)} g</strong></div>
     <table>
       <thead><tr><th>Ingrediente</th><th style="text-align:right">Proporção</th><th style="text-align:right">Gramas</th></tr></thead>
       <tbody>
         <tr>
           <td>Levain Starter</td>
           <td style="text-align:right">${lev.starterRatio}</td>
-          <td style="text-align:right">${fmt(lev.starterGrams)} g</td>
+          <td style="text-align:right">${Math.round(lev.starterGrams)} g</td>
         </tr>
         ${compRows}
       </tbody>
@@ -699,7 +703,7 @@ function levainCardHTML(lev) {
         <tr>
           <td>Total</td>
           <td style="text-align:right">${lev.totalRatio}</td>
-          <td style="text-align:right">${fmt(lev.needed)} g</td>
+          <td style="text-align:right">${Math.round(lev.needed)} g</td>
         </tr>
       </tfoot>
     </table>
@@ -712,14 +716,14 @@ function soakerCardHTML(id, s) {
   const tf    = totalFlour(s);
   const items = def.soaker.items.map(i => ({ name: i.name, grams: tf * i.pct / 100 }));
   const total = items.reduce((a, i) => a + i.grams, 0);
-  const rows  = items.map(i => `<tr><td>${esc(i.name)}</td><td colspan="2" style="text-align:right">${fmt(i.grams)} g</td></tr>`).join('');
+  const rows  = items.map(i => `<tr><td>${esc(i.name)}</td><td colspan="2" style="text-align:right">${Math.round(i.grams)} g</td></tr>`).join('');
   return `
   <div class="card">
     <div class="card-title">${esc(def.soaker.name)} <span class="badge-prep">Prep antecipado</span></div>
     <table>
       <thead><tr><th>Ingrediente</th><th style="text-align:right">Gramas</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
-      <tfoot><tr><td>Total</td><td colspan="2" style="text-align:right">${fmt(total)} g</td></tr></tfoot>
+      <tfoot><tr><td>Total</td><td colspan="2" style="text-align:right">${Math.round(total)} g</td></tr></tfoot>
     </table>
   </div>`;
 }
@@ -755,7 +759,7 @@ function renderFermento() {
       <tr>
         <td>${esc(c.name)}</td>
         <td style="text-align:right;color:var(--muted)">${c.ratio}</td>
-        <td style="text-align:right">${fmt(c.grams)} g</td>
+        <td style="text-align:right">${Math.round(c.grams)} g</td>
       </tr>`).join('');
     return `
     <div class="card">
@@ -782,7 +786,7 @@ function renderFermento() {
           <tr>
             <td>Levain Starter</td>
             <td style="text-align:right;color:var(--muted)">${type.starter}</td>
-            <td style="text-align:right">${fmt(calc.starterGrams)} g</td>
+            <td style="text-align:right">${Math.round(calc.starterGrams)} g</td>
           </tr>
           ${compRows}
         </tbody>
@@ -790,7 +794,7 @@ function renderFermento() {
           <tr>
             <td>Total</td>
             <td style="text-align:right">${calc.totalRatio}</td>
-            <td style="text-align:right">${fmt(needed)} g</td>
+            <td style="text-align:right">${Math.round(needed)} g</td>
           </tr>
         </tfoot>
       </table>
@@ -821,10 +825,10 @@ function syncDOM(id) {
   const flourPctTotal = s.flours.reduce((a, f) => a + (f.pct || 0), 0);
   s.flours.forEach((f, idx) => {
     const g = tf * (f.pct || 0) / 100;
-    setInput(`[data-recipe="${id}"][data-section="flour"][data-idx="${idx}"][data-role="grams-display"]`, fmt(g));
+    setInput(`[data-recipe="${id}"][data-section="flour"][data-idx="${idx}"][data-role="grams-display"]`, fmtGrams(g, f.pct || 0));
     setInput(`[data-recipe="${id}"][data-section="flour"][data-idx="${idx}"][data-field="pct"]`, (f.pct || 0).toFixed(1));
   });
-  setCell(`.total-g[data-recipe="${id}"][data-section="flour"]`, fmt(tf) + ' g');
+  setCell(`.total-g[data-recipe="${id}"][data-section="flour"]`, Math.round(tf) + ' g');
   setCell(`.total-p[data-recipe="${id}"][data-section="flour"]`, flourPctTotal.toFixed(1) + '%');
 
   // Ingredient rows
@@ -832,14 +836,14 @@ function syncDOM(id) {
   const ingGramsTotal = tf * ingPctTotal / 100;
   s.ingredients.forEach((item, idx) => {
     const g = tf * (item.pct || 0) / 100;
-    setInput(`[data-recipe="${id}"][data-section="ingredient"][data-idx="${idx}"][data-role="grams-display"]`, fmt(g));
+    setInput(`[data-recipe="${id}"][data-section="ingredient"][data-idx="${idx}"][data-role="grams-display"]`, fmtGrams(g, item.pct || 0));
     setInput(`[data-recipe="${id}"][data-section="ingredient"][data-idx="${idx}"][data-field="pct"]`, (item.pct || 0).toFixed(1));
   });
-  setCell(`.total-g[data-recipe="${id}"][data-section="ingredient"]`, fmt(ingGramsTotal) + ' g');
+  setCell(`.total-g[data-recipe="${id}"][data-section="ingredient"]`, Math.round(ingGramsTotal) + ' g');
   setCell(`.total-p[data-recipe="${id}"][data-section="ingredient"]`, ingPctTotal.toFixed(1) + '%');
 
   // TMC
-  setCell(`#tmc-${id}`, fmt(targetDough(s)));
+  setCell(`#tmc-${id}`, Math.round(targetDough(s)));
 
   // Levain
   const levEl = document.getElementById(`levain-${id}`);
