@@ -1,5 +1,5 @@
 // ⚠️  Bump this version on every deploy to force cache refresh
-const VERSION = 'levain-7d3bdc6';
+const VERSION = 'levain-09ec46e';
 const STATIC  = [
   './', './index.html', './manifest.json',
   './icon.svg', './favicon.svg', './icon-192.png', './icon-512.png',
