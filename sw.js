@@ -1,5 +1,5 @@
 // ⚠️  Bump this version on every deploy to force cache refresh
-const VERSION = 'levain-pwa-ios';
+const VERSION = 'levain-77e0eb4';
 const STATIC  = [
   './', './index.html', './manifest.json',
   './icon.svg', './favicon.svg', './icon-192.png', './icon-512.png',
