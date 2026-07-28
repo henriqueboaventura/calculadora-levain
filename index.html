@@ -90,6 +90,18 @@
     nav.tabs button .ti { font-size: 18px; line-height: 1; }
     nav.tabs button .tl { font-size: 10px; font-weight: 600; letter-spacing: .3px; white-space: nowrap; }
     nav.tabs button.active { color: var(--primary); border-bottom-color: var(--primary); }
+    nav.tabs button#add-tab-btn { color: var(--muted); }
+    nav.tabs button .tab-del {
+      position: absolute;
+      top: 4px; right: 2px;
+      font-size: 12px;
+      color: var(--muted);
+      opacity: .5;
+      padding: 2px;
+      border-radius: 4px;
+    }
+    nav.tabs button .tab-del:hover { opacity: 1; color: var(--danger); background: #fdf0ee; }
+    nav.tabs button[data-tab] { position: relative; }
 
     /* ── Views ── */
     main { flex: 1; }
@@ -332,7 +344,8 @@
   <button data-tab="doce"     role="tab"><span class="ti">🍰</span><span class="tl">Doce</span></button>
   <button data-tab="pizza"    role="tab"><span class="ti">🍕</span><span class="tl">Pizza</span></button>
   <button data-tab="centeio"  role="tab"><span class="ti">🌑</span><span class="tl">Centeio</span></button>
-  <button data-tab="fermento" role="tab"><span class="ti">🧫</span><span class="tl">Fermento</span></button>
+  <button id="fermento-tab-anchor" data-tab="fermento" role="tab"><span class="ti">🧫</span><span class="tl">Fermento</span></button>
+  <button id="add-tab-btn" type="button" aria-label="Nova receita"><span class="ti">＋</span><span class="tl">Nova</span></button>
 </nav>
 
 <main>
@@ -527,6 +540,20 @@ function getFermentoState() {
 function setFermentoState(patch) {
   const cur = getFermentoState();
   saveAll({ fermento: { ...cur, ...patch } });
+}
+
+function getCustomRecipes() {
+  return loadAll().customRecipes || [];
+}
+
+function setCustomRecipes(list) {
+  saveAll({ customRecipes: list });
+}
+
+function deleteRecipeData(id) {
+  const all = loadAll();
+  delete all[id];
+  try { localStorage.setItem(LS_KEY, JSON.stringify(all)); } catch {}
 }
 
 // ═══════════════════════════════════════════════
@@ -1062,6 +1089,17 @@ function applyScale(id, field, newVal) {
 
 // ── Tabs ──
 document.querySelector('nav.tabs').addEventListener('click', e => {
+  const delBtn = e.target.closest('[data-del-tab]');
+  if (delBtn) {
+    e.stopPropagation();
+    deleteCustomTab(delBtn.dataset.delTab);
+    return;
+  }
+  if (e.target.closest('#add-tab-btn')) {
+    const name = window.prompt('Nome da nova receita:');
+    if (name && name.trim()) addCustomTab(name.trim());
+    return;
+  }
   const btn = e.target.closest('[data-tab]');
   if (!btn) return;
   switchTab(btn.dataset.tab);
@@ -1078,10 +1116,97 @@ function switchTab(id) {
 }
 
 // ═══════════════════════════════════════════════
+// CUSTOM RECIPES
+// ═══════════════════════════════════════════════
+function customRecipeTemplate(name) {
+  return {
+    name, subtitle: 'Receita Personalizada',
+    units: 2, weight: 600,
+    flours: [
+      { name: 'Farinha de Trigo', pct: 100 },
+    ],
+    ingredients: [
+      { name: 'Água',         pct: 65,   isLevain: false },
+      { name: 'Levain',       pct: 20,   isLevain: true  },
+      { name: 'Sal Refinado', pct: 2,    isLevain: false },
+    ],
+    levainRatios: {
+      starter: 0.5,
+      components: [
+        { name: 'Farinha de Trigo', ratio: 1.0 },
+        { name: 'Água',             ratio: 0.5 },
+      ],
+    },
+  };
+}
+
+function slugify(name) {
+  return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'receita';
+}
+
+function uniqueRecipeId(base) {
+  let id = base, n = 2;
+  while (DEFAULTS[id]) id = `${base}-${n++}`;
+  return id;
+}
+
+function buildTabButton(id, name) {
+  const btn = document.createElement('button');
+  btn.dataset.tab = id;
+  btn.setAttribute('role', 'tab');
+  btn.innerHTML = `<span class="ti">📝</span><span class="tl">${esc(name)}</span>` +
+    `<span class="tab-del" data-del-tab="${id}" aria-label="Remover aba">×</span>`;
+  document.getElementById('fermento-tab-anchor').before(btn);
+  return btn;
+}
+
+function buildViewDiv(id) {
+  const div = document.createElement('div');
+  div.id = `view-${id}`;
+  div.className = 'view';
+  document.querySelector('main').appendChild(div);
+  return div;
+}
+
+function registerCustomRecipe(id, name) {
+  DEFAULTS[id] = customRecipeTemplate(name);
+  buildTabButton(id, name);
+  buildViewDiv(id);
+  renderRecipe(id);
+}
+
+function addCustomTab(name) {
+  const id = uniqueRecipeId(slugify(name));
+  registerCustomRecipe(id, name);
+  const list = getCustomRecipes();
+  list.push({ id, name });
+  setCustomRecipes(list);
+  switchTab(id);
+}
+
+function deleteCustomTab(id) {
+  const entry = getCustomRecipes().find(r => r.id === id);
+  const name  = entry ? entry.name : DEFAULTS[id]?.name ?? id;
+  if (!window.confirm(`Remover a aba "${name}"? Essa ação não pode ser desfeita.`)) return;
+
+  const wasActive = document.querySelector(`[data-tab="${id}"]`)?.classList.contains('active');
+
+  document.querySelector(`[data-tab="${id}"]`)?.remove();
+  document.getElementById(`view-${id}`)?.remove();
+  delete DEFAULTS[id];
+  deleteRecipeData(id);
+  setCustomRecipes(getCustomRecipes().filter(r => r.id !== id));
+
+  if (wasActive) switchTab('rustico');
+}
+
+// ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
 (function init() {
   RECIPE_IDS.forEach(id => renderRecipe(id));
+  getCustomRecipes().forEach(({ id, name }) => registerCustomRecipe(id, name));
   renderFermento();
   switchTab(loadAll().activeTab || 'rustico');
   if ('serviceWorker' in navigator) {
