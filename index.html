@@ -287,6 +287,7 @@
       margin-bottom: 12px;
     }
     .levain-pill strong { color: var(--primary); margin-left: 4px; }
+    .levain-ratio-in { width: 56px; margin-left: auto; }
 
     /* ── Soaker badge ── */
     .badge-prep {
@@ -497,19 +498,25 @@ function saveAll(patch) {
   try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch {}
 }
 
+function cloneLevainRatios(lr) {
+  if (!lr) return null;
+  return { starter: lr.starter, components: lr.components.map(c => ({ ...c })) };
+}
+
 function getState(id) {
   const def = DEFAULTS[id];
   const saved = loadAll()[id] || {};
   return {
-    units:       saved.units       ?? def.units,
-    weight:      saved.weight      ?? def.weight,
-    flours:      (saved.flours      ?? def.flours)      .map(x => ({ ...x })),
-    ingredients: (saved.ingredients ?? def.ingredients) .map(x => ({ ...x })),
+    units:        saved.units        ?? def.units,
+    weight:       saved.weight       ?? def.weight,
+    flours:       (saved.flours      ?? def.flours)      .map(x => ({ ...x })),
+    ingredients:  (saved.ingredients ?? def.ingredients) .map(x => ({ ...x })),
+    levainRatios: cloneLevainRatios(saved.levainRatios ?? def.levainRatios),
   };
 }
 
 function setState(id, s) {
-  saveAll({ [id]: { units: s.units, weight: s.weight, flours: s.flours, ingredients: s.ingredients } });
+  saveAll({ [id]: { units: s.units, weight: s.weight, flours: s.flours, ingredients: s.ingredients, levainRatios: s.levainRatios } });
 }
 
 function getFermentoState() {
@@ -533,13 +540,13 @@ function totalFlour(s) {
 }
 
 function calcLevain(s, id) {
-  const def = DEFAULTS[id];
-  if (!def.levainRatios) return null;
+  const lr = s.levainRatios;
+  if (!lr) return null;
   const item = s.ingredients.find(i => i.isLevain);
   if (!item || !(item.pct > 0)) return null;
   const tf = totalFlour(s);
   const needed = tf * item.pct / 100;
-  const { starter, components } = def.levainRatios;
+  const { starter, components } = lr;
   const totalRatio = starter + components.reduce((a, c) => a + c.ratio, 0);
   return {
     needed,
@@ -679,14 +686,16 @@ function divisionCard(id, s) {
   </div>`;
 }
 
-function levainCardHTML(lev) {
+function levainCardHTML(lev, id) {
   if (!lev) return '';
   const compRows = lev.components
-    .filter(c => c.ratio > 0)
-    .map(c => `
+    .map((c, idx) => `
     <tr>
       <td>${esc(c.name)}</td>
-      <td style="text-align:right">${c.ratio}</td>
+      <td style="text-align:right">
+        <input class="cell-in num-in levain-ratio-in" data-recipe="${id}" data-comp="${idx}"
+          type="number" min="0" step="0.05" value="${c.ratio}" />
+      </td>
       <td style="text-align:right">${Math.round(c.grams)} g</td>
     </tr>`).join('');
   return `
@@ -698,7 +707,10 @@ function levainCardHTML(lev) {
       <tbody>
         <tr>
           <td>Levain Starter</td>
-          <td style="text-align:right">${lev.starterRatio}</td>
+          <td style="text-align:right">
+            <input class="cell-in num-in levain-ratio-in" data-recipe="${id}" data-comp="starter"
+              type="number" min="0" step="0.05" value="${lev.starterRatio}" />
+          </td>
           <td style="text-align:right">${Math.round(lev.starterGrams)} g</td>
         </tr>
         ${compRows}
@@ -749,7 +761,7 @@ function renderRecipe(id) {
     ${divisionCard(id, s)}
     ${sectionCard(id, 'flour',      s.flours,      tf, 'Farinhas',     'Farinha')}
     ${sectionCard(id, 'ingredient', s.ingredients, tf, 'Ingredientes', 'Ingrediente')}
-    <div id="levain-${id}">${levainCardHTML(lev)}</div>
+    <div id="levain-${id}">${levainCardHTML(lev, id)}</div>
     ${soakerCardHTML(id, s)}
   `;
 }
@@ -851,7 +863,32 @@ function syncDOM(id) {
 
   // Levain
   const levEl = document.getElementById(`levain-${id}`);
-  if (levEl) levEl.innerHTML = levainCardHTML(calcLevain(s, id));
+  if (levEl) levEl.innerHTML = levainCardHTML(calcLevain(s, id), id);
+}
+
+// Lighter levain update: only patches grams/totals, leaves ratio inputs
+// untouched so typing in them doesn't lose focus/cursor position.
+function syncLevainDOM(id) {
+  const s   = getState(id);
+  const lev = calcLevain(s, id);
+  const levEl = document.getElementById(`levain-${id}`);
+  if (!lev || !levEl) return;
+
+  const pill = levEl.querySelector('.levain-pill strong');
+  if (pill) pill.textContent = Math.round(lev.needed) + ' g';
+
+  const rows = levEl.querySelectorAll('tbody tr');
+  if (rows[0]) rows[0].children[2].textContent = Math.round(lev.starterGrams) + ' g';
+  lev.components.forEach((c, idx) => {
+    const row = rows[idx + 1];
+    if (row) row.children[2].textContent = Math.round(c.grams) + ' g';
+  });
+
+  const tfootRow = levEl.querySelector('tfoot tr');
+  if (tfootRow) {
+    tfootRow.children[1].textContent = lev.totalRatio;
+    tfootRow.children[2].textContent = Math.round(lev.needed) + ' g';
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -899,6 +936,25 @@ document.querySelector('main').addEventListener('input', e => {
     }
   }
 
+  // ── Levain ratio inputs ──
+  if (t.classList.contains('levain-ratio-in')) {
+    const rid  = t.dataset.recipe;
+    const comp = t.dataset.comp;
+    const val  = parseFloat(t.value);
+    if (isNaN(val) || val < 0) return;
+    const s = getState(rid);
+    if (!s.levainRatios) return;
+    if (comp === 'starter') {
+      s.levainRatios.starter = val;
+    } else {
+      const idx = parseInt(comp);
+      if (s.levainRatios.components[idx]) s.levainRatios.components[idx].ratio = val;
+    }
+    setState(rid, s);
+    syncLevainDOM(rid);
+    return;
+  }
+
   // ── Fermento needed input ──
   if (t.classList.contains('ferm-in')) {
     const n = parseFloat(t.value);
@@ -943,8 +999,9 @@ document.querySelector('main').addEventListener('click', e => {
     const def = DEFAULTS[id];
     setState(id, {
       units: def.units, weight: def.weight,
-      flours:      def.flours.map(f => ({ ...f })),
-      ingredients: def.ingredients.map(i => ({ ...i })),
+      flours:       def.flours.map(f => ({ ...f })),
+      ingredients:  def.ingredients.map(i => ({ ...i })),
+      levainRatios: cloneLevainRatios(def.levainRatios),
     });
     renderRecipe(id);
     return;
