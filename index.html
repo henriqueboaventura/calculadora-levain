@@ -1210,7 +1210,15 @@ function deleteCustomTab(id) {
   renderFermento();
   switchTab(loadAll().activeTab || 'rustico');
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // iOS standalone PWAs can sit suspended in the background for days
+      // without the browser ever re-checking sw.js on its own — force a
+      // check whenever the app comes back to the foreground.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update().catch(() => {});
+      });
+      window.addEventListener('pageshow', () => reg.update().catch(() => {}));
+    }).catch(() => {});
     // Reload when a new SW version takes control (skipWaiting + clients.claim triggers this)
     let swRefreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
